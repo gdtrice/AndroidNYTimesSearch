@@ -4,4 +4,13 @@
     <string name="hint">Enter search</string>
     <string name="search">Search</string>
     <string name="title_activity_article">ArticleActivity</string>
+    <string name="save">Save</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="sortOrder">Sort Order</string>
+    <string name="newsDeskValue">News Desk Value</string>
+    <string name="arts">Arts</string>
+    <string name="fashionAndStyle"><![CDATA[Fashion & Style]]></string>
+    <string name="sports">Sports</string>
 </resources>

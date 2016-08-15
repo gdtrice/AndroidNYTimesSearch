@@ -12,9 +12,11 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.Toast;
 
 import com.example.gtrice.nytimessearch.ArticleArrayAdapter;
 import com.example.gtrice.nytimessearch.Models.Article;
+import com.example.gtrice.nytimessearch.Models.SearchSettings;
 import com.example.gtrice.nytimessearch.R;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -24,6 +26,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import cz.msebera.android.httpclient.Header;
@@ -34,8 +37,11 @@ public class SearchActivity extends AppCompatActivity {
     GridView gvResults;
     Button btnSearch;
 
+
     ArrayList<Article> articles;
     ArticleArrayAdapter adapter;
+    SearchSettings settings;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,6 +77,12 @@ public class SearchActivity extends AppCompatActivity {
         return true;
     }
 
+    public void onSettingsClick(MenuItem item) {
+        Intent i = new Intent(this, SettingsActivity.class);
+        // add existing settings if available
+        startActivityForResult(i, 000);
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -88,13 +100,25 @@ public class SearchActivity extends AppCompatActivity {
 
     public void onArticleSearch(View view) {
         String query = etQuery.getText().toString();
-        //Toast.makeText(this, "Search for" + query, Toast.LENGTH_SHORT).show();
         AsyncHttpClient client = new AsyncHttpClient();
         String url = "https://api.nytimes.com/svc/search/v2/articlesearch.json";
         RequestParams params = new RequestParams();
         params.put("api-key", "9f09d4067c0940ddb09ca64100ba971e");
         params.put("page", 0);
         params.put("q", query);
+
+        if(settings != null) {
+            params.put("begin_date",  new SimpleDateFormat("yyyyMMdd").format(settings.getBeginDate()));
+            params.put("sort", settings.getSortOrder());
+
+            String deskString = "";
+            for (int i = 0; i<settings.getNewsDesk().size(); i++) {
+                deskString += String.format("\"%s\"", settings.getNewsDesk().get(i));
+            }
+            if (deskString != null) {
+                params.put("fq", String.format("news_desk:(%s)", deskString));
+            }
+        }
 
         client.get(url, params, new JsonHttpResponseHandler(){
 
@@ -111,5 +135,13 @@ public class SearchActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == SettingsActivity.settingsResponseCode) {
+            settings = (SearchSettings) data.getExtras().getSerializable("settings");
+            Toast.makeText(this, "Search Settings Updated", Toast.LENGTH_SHORT).show();
+        }
     }
 }
